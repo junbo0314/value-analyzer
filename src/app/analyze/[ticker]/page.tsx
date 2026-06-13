@@ -13,6 +13,7 @@ import NavSearch from '@/components/NavSearch';
 import MarketGradeSelector from '@/components/MarketGradeSelector';
 import VariablePanel from '@/components/VariablePanel';
 import IntrinsicValueCard from '@/components/IntrinsicValueCard';
+import MarketContextCard from '@/components/MarketContextCard';
 import FormulaBreakdown from '@/components/FormulaBreakdown';
 import AIReportSection from '@/components/AIReportSection';
 
@@ -197,6 +198,9 @@ export default function AnalyzePage() {
               {ivResult ? (
                 <>
                   <IntrinsicValueCard result={ivResult} stockData={stockData} />
+                  <MarketContextCard
+                    currentIVtoPrice={ivResult.iv / ivResult.currentPrice}
+                  />
                   <FormulaBreakdown result={ivResult} selectedGrade={selectedGrade} />
                 </>
               ) : (

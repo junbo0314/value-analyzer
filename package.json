@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "compute-market-avg": "npx tsx scripts/computeMarketAverage.ts",
+    "compute-market-avg:test": "npx tsx scripts/computeMarketAverage.ts --test"
   },
   "dependencies": {
     "@radix-ui/react-select": "^2.3.0",
