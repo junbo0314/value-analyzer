@@ -75,7 +75,7 @@ export default function NavSearch() {
     }
     if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIdx(i => Math.min(i + 1, suggestions.length - 1)); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIdx(i => Math.max(i - 1, -1)); }
-    else if (e.key === 'Enter') { e.preventDefault(); if (activeIdx >= 0) { go(suggestions[activeIdx].symbol); } else { go(query); } }
+    else if (e.key === 'Enter') { e.preventDefault(); if (activeIdx >= 0) { go(suggestions[activeIdx].symbol); } else { go(suggestions[0].symbol); } }
   };
 
   return (

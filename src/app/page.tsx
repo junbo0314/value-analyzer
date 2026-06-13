@@ -90,7 +90,7 @@ export default function HomePage() {
     } else if (e.key === 'Enter') {
       e.preventDefault();
       if (activeIdx >= 0) go(suggestions[activeIdx].symbol);
-      else go(query);
+      else go(suggestions[0].symbol);
     } else if (e.key === 'Escape') {
       setShowDrop(false);
     }
@@ -100,6 +100,8 @@ export default function HomePage() {
     e.preventDefault();
     if (activeIdx >= 0 && suggestions[activeIdx]) {
       go(suggestions[activeIdx].symbol);
+    } else if (suggestions.length > 0) {
+      go(suggestions[0].symbol);
     } else {
       go(query);
     }
