@@ -13,8 +13,8 @@ const POPULAR = [
   { ticker: 'META', name: 'Meta' },
   { ticker: 'AMZN', name: 'Amazon' },
   { ticker: 'TSM', name: 'TSMC' },
-  { ticker: '005930.KS', name: '삼성전자' },
-  { ticker: '000660.KS', name: 'SK하이닉스' },
+  { ticker: 'BRKB', name: 'Berkshire' },
+  { ticker: 'JPM', name: 'JPMorgan' },
 ];
 
 export default function HomePage() {

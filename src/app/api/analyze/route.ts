@@ -96,42 +96,30 @@ export async function GET(request: NextRequest) {
 
     const currentPrice: number = fd.currentPrice ?? quote.regularMarketPrice ?? 0;
 
-    // TTM EPS: 표준 필드 → netIncomeToCommon / shares (한국·신흥국 주식 대응)
+    // 한국 주식(KRW) 미지원
+    const currency: string = price.currency ?? quote.currency ?? 'USD';
+    if (currency === 'KRW') {
+      return NextResponse.json(
+        { error: `한국 주식(${sym})은 현재 지원하지 않습니다. Yahoo Finance의 KRW EPS 데이터 신뢰성 문제로 분석 결과가 부정확합니다.` },
+        { status: 400 }
+      );
+    }
+
+    // TTM EPS
     const ttmEPS: number =
       ks.trailingEps ??
       quote.epsTrailingTwelveMonths ??
-      (ks.netIncomeToCommon != null && sharesOutstanding > 1
-        ? ks.netIncomeToCommon / sharesOutstanding
-        : null) ??
       0;
 
-    // Forward EPS: 표준 필드 → epsCurrentYear (한국 주식 애널리스트 컨센서스)
+    // Forward EPS
     const forwardEPS: number =
       ks.forwardEps ??
       quote.epsForward ??
       fd.forwardEps ??
-      quote.epsCurrentYear ??
-      ttmEPS; // 최후 fallback: TTM EPS 사용
+      ttmEPS;
 
     const marketCap: number =
       price.marketCap ?? quote.marketCap ?? (currentPrice * sharesOutstanding);
-
-    // EPS 소스 디버그 (한국 주식 진단용)
-    if (sym === '000660.KS') {
-      console.log(`[EPS-DEBUG] ${sym}`);
-      console.log('  ks.trailingEps         :', ks.trailingEps);
-      console.log('  ks.forwardEps          :', ks.forwardEps);
-      console.log('  ks.netIncomeToCommon   :', ks.netIncomeToCommon);
-      console.log('  ks.sharesOutstanding   :', ks.sharesOutstanding);
-      console.log('  quote.epsTrailingTwelveMonths:', quote.epsTrailingTwelveMonths);
-      console.log('  quote.epsForward       :', quote.epsForward);
-      console.log('  quote.epsCurrentYear   :', quote.epsCurrentYear);
-      console.log('  quote.epsNextYear      ?: ', (quote as Record<string, unknown>).epsNextYear);
-      console.log('  fd.forwardEps          :', fd.forwardEps);
-      console.log('  fd.currentPrice        :', fd.currentPrice);
-      console.log('  → ttmEPS resolved      :', ttmEPS);
-      console.log('  → forwardEPS resolved  :', forwardEPS);
-    }
 
     const stockData: StockData = {
       ticker: sym,
@@ -154,7 +142,7 @@ export async function GET(request: NextRequest) {
       operatingMargin: fd.operatingMargins ?? 0,
       returnOnEquity: fd.returnOnEquity ?? 0,
       sharesOutstanding,
-      currency: price.currency ?? quote.currency ?? 'USD',
+      currency,
       sector: ap.sector ?? '',
       industry: ap.industry ?? '',
       exchange: price.exchangeName ?? quote.fullExchangeName ?? '',
