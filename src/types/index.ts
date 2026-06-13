@@ -19,8 +19,8 @@ export const GRADE_CONFIGS: GradeConfig[] = [
   {
     grade: 1,
     name: '압도적 지배자',
-    basePER: 14.0,
-    gMultiplier: 2.25,
+    basePER: 18.0,
+    gMultiplier: 1.75,
     marketShareRange: '글로벌 시장 점유율 70% 이상',
     description: '대체 불가능한 인프라 독점',
     examples: ['MSFT (클라우드+OS)', 'GOOGL (검색광고)'],
@@ -33,8 +33,8 @@ export const GRADE_CONFIGS: GradeConfig[] = [
   {
     grade: 2,
     name: '강력한 과점 주도자',
-    basePER: 13.0,
-    gMultiplier: 1.5,
+    basePER: 17.5,
+    gMultiplier: 0.75,
     marketShareRange: '글로벌 시장 점유율 30~70%',
     description: '강력한 생태계 보유',
     examples: ['META (SNS)', 'NVDA (GPU)', 'AAPL (스마트폰)'],
@@ -47,8 +47,8 @@ export const GRADE_CONFIGS: GradeConfig[] = [
   {
     grade: 3,
     name: '유력한 경쟁자',
-    basePER: 7.0,
-    gMultiplier: 1.0,
+    basePER: 4.5,
+    gMultiplier: 0.50,
     marketShareRange: '글로벌 시장 점유율 10~30%',
     description: '자기 영역은 있으나 경쟁 노출',
     examples: ['005930.KS (삼성전자)', 'WDC', 'AMD'],
@@ -61,7 +61,7 @@ export const GRADE_CONFIGS: GradeConfig[] = [
   {
     grade: 4,
     name: '취약한 추격자',
-    basePER: 4.5,
+    basePER: 4.0,
     gMultiplier: 1.0,
     marketShareRange: '시장 점유율 10% 미만',
     description: '가격 결정권 부재',
@@ -80,6 +80,7 @@ export interface StockData {
   currentPrice: number;
   forwardEPS: number;
   ttmEPS: number;
+  marketCap?: number;
   netCashPerShare: number;
   totalCash: number;
   totalDebt: number;

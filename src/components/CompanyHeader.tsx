@@ -22,6 +22,22 @@ export default function CompanyHeader({ data, aaaRate, rateSource }: Props) {
       ? `₩${Math.round(v).toLocaleString('ko-KR')}`
       : `$${v.toFixed(2)}`;
 
+  // EPS Yield = EPS / Price (이익 수익률, 높을수록 저평가)
+  const eps = data.forwardEPS !== 0 ? data.forwardEPS : data.ttmEPS;
+  const epsYield = eps > 0 && data.currentPrice > 0 ? (eps / data.currentPrice) * 100 : null;
+  const trailingPE = data.ttmEPS > 0 && data.currentPrice > 0 ? data.currentPrice / data.ttmEPS : null;
+
+  const fmtMarketCap = (v: number) => {
+    if (isCurrencyKRW) {
+      if (v >= 1e12) return `₩${(v / 1e12).toFixed(1)}조`;
+      if (v >= 1e8)  return `₩${(v / 1e8).toFixed(0)}억`;
+      return `₩${Math.round(v / 1e6)}M`;
+    }
+    if (v >= 1e12) return `$${(v / 1e12).toFixed(2)}T`;
+    if (v >= 1e9)  return `$${(v / 1e9).toFixed(1)}B`;
+    return `$${(v / 1e6).toFixed(0)}M`;
+  };
+
   return (
     <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-5">
@@ -82,7 +98,7 @@ export default function CompanyHeader({ data, aaaRate, rateSource }: Props) {
       </div>
 
       {/* Metrics row */}
-      <div className="mt-5 pt-5 border-t border-gray-800 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-3">
+      <div className="mt-5 pt-5 border-t border-gray-800 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-x-4 gap-y-3">
         <Metric label="TTM EPS" value={data.ttmEPS !== 0 ? fmtEPS(data.ttmEPS) : '—'} />
         <Metric
           label="매출 성장률"
@@ -114,6 +130,18 @@ export default function CompanyHeader({ data, aaaRate, rateSource }: Props) {
           positive={data.debtRatio < 0.25}
           negative={data.debtRatio > 0.6}
         />
+        <Metric
+          label="EPS Yield (이익률)"
+          value={epsYield !== null ? `${epsYield.toFixed(2)}%` : '—'}
+          positive={epsYield !== null && epsYield > 5}
+          negative={epsYield !== null && epsYield < 2}
+          tooltip="EPS ÷ 주가 × 100. 높을수록 주가 대비 이익이 크다 (저PER)"
+        />
+        <Metric
+          label="시가총액"
+          value={data.marketCap ? fmtMarketCap(data.marketCap) : trailingPE !== null ? `P/E ${trailingPE.toFixed(1)}x` : '—'}
+          tooltip={data.marketCap ? `P/E (TTM): ${trailingPE !== null ? trailingPE.toFixed(1) + 'x' : '—'}` : undefined}
+        />
       </div>
     </div>
   );
@@ -124,15 +152,17 @@ function Metric({
   value,
   positive,
   negative,
+  tooltip,
 }: {
   label: string;
   value: string;
   positive?: boolean;
   negative?: boolean;
+  tooltip?: string;
 }) {
   const color = positive ? 'text-green-400' : negative ? 'text-red-400' : 'text-gray-300';
   return (
-    <div>
+    <div title={tooltip}>
       <p className="text-gray-600 text-xs mb-0.5">{label}</p>
       <p className={`text-sm font-semibold tabular-nums ${color}`}>{value}</p>
     </div>

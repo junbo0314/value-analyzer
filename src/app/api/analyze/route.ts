@@ -113,12 +113,16 @@ export async function GET(request: NextRequest) {
       quote.epsCurrentYear ??
       ttmEPS; // 최후 fallback: TTM EPS 사용
 
+    const marketCap: number =
+      price.marketCap ?? quote.marketCap ?? (currentPrice * sharesOutstanding);
+
     const stockData: StockData = {
       ticker: sym,
       companyName: price.shortName ?? price.longName ?? quote.longName ?? sym,
       currentPrice,
       forwardEPS,
       ttmEPS,
+      marketCap: marketCap > 0 ? marketCap : undefined,
       netCashPerShare,
       totalCash,
       totalDebt,
