@@ -2,7 +2,7 @@
 
 Graham-Dodd 내재가치 공식을 기반으로 미국·한국 주식의 내재가치(IV)를 계산하고 현재 주가와 비교해주는 웹 앱입니다.
 
-**Live Demo →** _배포 후 URL 추가_
+**Live Demo →** _Vercel 배포 후 URL 추가_  &nbsp;|&nbsp;  **GitHub →** https://github.com/junbo0314/value-analyzer
 
 ---
 
