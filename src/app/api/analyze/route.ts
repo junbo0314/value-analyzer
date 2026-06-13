@@ -132,6 +132,7 @@ export async function GET(request: NextRequest) {
       totalCash,
       totalDebt,
       debtRatio,
+      revenue: fd.totalRevenue ?? 0,
       revenueGrowth: fd.revenueGrowth ?? 0,
       epsCAGR,
       epsCAGRYears,

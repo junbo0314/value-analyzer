@@ -51,6 +51,15 @@ export function getDefaultDF(debtRatio: number): number {
   return 0.7;
 }
 
+export function calculateEVtoEBIT(data: import('@/types').StockData): number | null {
+  if (data.revenue <= 0) return null;
+  const marketCap = data.currentPrice * data.sharesOutstanding;
+  const ev = marketCap + data.totalDebt - data.totalCash;
+  const operatingIncome = data.revenue * data.operatingMargin;
+  if (operatingIncome <= 0) return null;
+  return ev / operatingIncome;
+}
+
 export function formatCurrency(value: number, currency: string): string {
   if (currency === 'KRW') {
     return `₩${Math.round(value).toLocaleString('ko-KR')}`;

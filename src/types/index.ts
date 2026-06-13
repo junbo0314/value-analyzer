@@ -85,6 +85,7 @@ export interface StockData {
   totalCash: number;
   totalDebt: number;
   debtRatio: number;
+  revenue: number;
   revenueGrowth: number;
   epsCAGR: number | null;
   epsCAGRYears: number;

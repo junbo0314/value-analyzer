@@ -1,6 +1,7 @@
 'use client';
 
 import { AISignal, StockData } from '@/types';
+import { calculateEVtoEBIT } from '@/lib/calculations';
 import { TrendingUp, AlertTriangle, Activity, Dot } from 'lucide-react';
 
 interface Props {
@@ -37,21 +38,28 @@ export default function AIReportSection({ signals, stockData }: Props) {
       </div>
 
       {/* Summary metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        {[
-          { label: '현재 주가', value: fmtPrice(stockData.currentPrice, stockData.currency) },
-          { label: 'Forward EPS', value: stockData.forwardEPS !== 0 ? fmtPrice(stockData.forwardEPS, stockData.currency) : 'N/A' },
-          { label: '총이익률', value: stockData.grossMargin > 0 ? `${(stockData.grossMargin * 100).toFixed(1)}%` : 'N/A' },
-          { label: '영업이익률', value: stockData.operatingMargin !== 0 ? `${(stockData.operatingMargin * 100).toFixed(1)}%` : 'N/A' },
-          { label: 'ROE', value: stockData.returnOnEquity !== 0 ? `${(stockData.returnOnEquity * 100).toFixed(1)}%` : 'N/A' },
-          { label: '부채비율', value: stockData.debtRatio > 0 ? `${(stockData.debtRatio * 100).toFixed(0)}%` : 'N/A' },
-        ].map(({ label, value }) => (
-          <div key={label} className="bg-gray-900 border border-gray-800 rounded-lg p-3">
-            <p className="text-gray-600 text-xs mb-1">{label}</p>
-            <p className="text-white text-sm font-semibold tabular-nums">{value}</p>
+      {(() => {
+        const evEbit = calculateEVtoEBIT(stockData);
+        const evEbitStr = evEbit !== null ? `${evEbit.toFixed(1)}x` : 'N/A';
+        return (
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+            {[
+              { label: '현재 주가', value: fmtPrice(stockData.currentPrice, stockData.currency) },
+              { label: 'Forward EPS', value: stockData.forwardEPS !== 0 ? fmtPrice(stockData.forwardEPS, stockData.currency) : 'N/A' },
+              { label: '총이익률', value: stockData.grossMargin > 0 ? `${(stockData.grossMargin * 100).toFixed(1)}%` : 'N/A' },
+              { label: '영업이익률', value: stockData.operatingMargin !== 0 ? `${(stockData.operatingMargin * 100).toFixed(1)}%` : 'N/A' },
+              { label: 'ROE', value: stockData.returnOnEquity !== 0 ? `${(stockData.returnOnEquity * 100).toFixed(1)}%` : 'N/A' },
+              { label: '부채비율', value: stockData.debtRatio > 0 ? `${(stockData.debtRatio * 100).toFixed(0)}%` : 'N/A' },
+              { label: 'EV/EBIT', value: evEbitStr },
+            ].map(({ label, value }) => (
+              <div key={label} className="bg-gray-900 border border-gray-800 rounded-lg p-3">
+                <p className="text-gray-600 text-xs mb-1">{label}</p>
+                <p className="text-white text-sm font-semibold tabular-nums">{value}</p>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        );
+      })()}
 
       {/* Disclaimer */}
       <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-4 flex items-start gap-2">

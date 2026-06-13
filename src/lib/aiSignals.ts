@@ -1,4 +1,5 @@
 import { StockData, AISignal } from '@/types';
+import { calculateEVtoEBIT } from '@/lib/calculations';
 
 export function generateAISignals(data: StockData): AISignal[] {
   const signals: AISignal[] = [];
@@ -208,6 +209,34 @@ export function generateAISignals(data: StockData): AISignal[] {
       description: `재고가 전년 대비 ${(data.inventoryGrowth * 100).toFixed(1)}% 증가하여 매출 성장률(${(data.revenueGrowth * 100).toFixed(1)}%)을 크게 초과했습니다. 수요 둔화 또는 재고 적체 가능성을 시사할 수 있습니다.`,
       metric: '재고 증가율',
       value: `+${(data.inventoryGrowth * 100).toFixed(1)}%`,
+    });
+  }
+
+  // --- EV/EBIT signals ---
+  const evEbit = calculateEVtoEBIT(data);
+  if (evEbit !== null && evEbit > 0 && evEbit < 8) {
+    signals.push({
+      type: 'positive',
+      title: '낮은 EV/EBIT',
+      description: `영업이익 대비 기업가치가 낮은 편입니다 (EV/EBIT ${evEbit.toFixed(1)}배). 본업의 수익력 대비 저평가 가능성이 있습니다.`,
+      metric: 'EV/EBIT',
+      value: `${evEbit.toFixed(1)}배`,
+    });
+  } else if (evEbit !== null && evEbit > 30) {
+    signals.push({
+      type: 'warning',
+      title: '높은 EV/EBIT',
+      description: `영업이익 대비 기업가치가 매우 높습니다 (EV/EBIT ${evEbit.toFixed(1)}배). 시장이 미래 성장에 대한 높은 기대를 선반영하고 있어, 기대에 못 미칠 경우 하락 리스크가 큽니다.`,
+      metric: 'EV/EBIT',
+      value: `${evEbit.toFixed(1)}배`,
+    });
+  } else if (evEbit === null && data.revenue > 0 && data.operatingMargin <= 0) {
+    signals.push({
+      type: 'warning',
+      title: '영업적자 (EV/EBIT 불가)',
+      description: '영업적자 상태로 EV/EBIT을 계산할 수 없습니다. 본업 수익성 회복 여부를 우선 확인해야 합니다.',
+      metric: 'EV/EBIT',
+      value: 'N/A',
     });
   }
 
