@@ -116,6 +116,23 @@ export async function GET(request: NextRequest) {
     const marketCap: number =
       price.marketCap ?? quote.marketCap ?? (currentPrice * sharesOutstanding);
 
+    // EPS 소스 디버그 (한국 주식 진단용)
+    if (sym === '000660.KS') {
+      console.log(`[EPS-DEBUG] ${sym}`);
+      console.log('  ks.trailingEps         :', ks.trailingEps);
+      console.log('  ks.forwardEps          :', ks.forwardEps);
+      console.log('  ks.netIncomeToCommon   :', ks.netIncomeToCommon);
+      console.log('  ks.sharesOutstanding   :', ks.sharesOutstanding);
+      console.log('  quote.epsTrailingTwelveMonths:', quote.epsTrailingTwelveMonths);
+      console.log('  quote.epsForward       :', quote.epsForward);
+      console.log('  quote.epsCurrentYear   :', quote.epsCurrentYear);
+      console.log('  quote.epsNextYear      ?: ', (quote as Record<string, unknown>).epsNextYear);
+      console.log('  fd.forwardEps          :', fd.forwardEps);
+      console.log('  fd.currentPrice        :', fd.currentPrice);
+      console.log('  → ttmEPS resolved      :', ttmEPS);
+      console.log('  → forwardEPS resolved  :', forwardEPS);
+    }
+
     const stockData: StockData = {
       ticker: sym,
       companyName: price.shortName ?? price.longName ?? quote.longName ?? sym,

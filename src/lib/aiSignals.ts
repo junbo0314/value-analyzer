@@ -105,6 +105,16 @@ export function generateAISignals(data: StockData): AISignal[] {
     });
   }
 
+  if (data.forwardEPS > 0 && data.ttmEPS > 0 && data.forwardEPS > data.ttmEPS * 1.3) {
+    signals.push({
+      type: 'warning',
+      title: 'Forward EPS 급증 전망',
+      description: `Forward EPS(${data.forwardEPS.toFixed(0)})가 TTM EPS(${data.ttmEPS.toFixed(0)}) 대비 ${(((data.forwardEPS / data.ttmEPS) - 1) * 100).toFixed(0)}% 높게 추정되고 있습니다. 업황 사이클의 정점 부근일 가능성이 있으며, 추정치가 실현되지 않을 경우 내재가치가 과대평가될 위험이 있습니다.`,
+      metric: 'Forward/TTM EPS 비율',
+      value: `${(data.forwardEPS / data.ttmEPS).toFixed(1)}배`,
+    });
+  }
+
   if (data.debtRatio > 0.6) {
     signals.push({
       type: 'warning',
