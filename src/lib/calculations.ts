@@ -56,8 +56,9 @@ export function calculateEVtoEBIT(data: import('@/types').StockData): number | n
   const marketCap = data.currentPrice * data.sharesOutstanding;
   const ev = marketCap + data.totalDebt - data.totalCash;
   const operatingIncome = data.revenue * data.operatingMargin;
-  if (operatingIncome <= 0) return null;
-  return ev / operatingIncome;
+  if (operatingIncome <= 0 || ev <= 0) return null;
+  const result = ev / operatingIncome;
+  return result > 200 ? null : result;
 }
 
 export function formatCurrency(value: number, currency: string): string {

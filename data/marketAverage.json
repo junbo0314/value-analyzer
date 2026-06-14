@@ -1,7 +1,64 @@
 {
-  "computedAt": "2026-06-13T14:38:30.701Z",
+  "computedAt": "2026-06-13T23:56:25.677Z",
   "sampleSize": 214,
   "averageIVtoPrice": 0.9006,
   "medianIVtoPrice": 0.6118,
-  "aaaRate": 4.99
+  "aaaRate": 4.99,
+  "sectorEVtoEBIT": {
+    "Consumer Cyclical": {
+      "mean": 24.72,
+      "median": 19.49,
+      "sampleSize": 39
+    },
+    "Healthcare": {
+      "mean": 20.37,
+      "median": 18.18,
+      "sampleSize": 29
+    },
+    "Technology": {
+      "mean": 41.39,
+      "median": 23.48,
+      "sampleSize": 34
+    },
+    "Consumer Defensive": {
+      "mean": 18.59,
+      "median": 15.96,
+      "sampleSize": 34
+    },
+    "Utilities": {
+      "mean": 23.25,
+      "median": 22.24,
+      "sampleSize": 31
+    },
+    "Financial Services": {
+      "mean": 17.06,
+      "median": 11.63,
+      "sampleSize": 27
+    },
+    "Basic Materials": {
+      "mean": 29.08,
+      "median": 23.75,
+      "sampleSize": 17
+    },
+    "Real Estate": {
+      "mean": 40.55,
+      "median": 37.74,
+      "sampleSize": 28
+    },
+    "Energy": {
+      "mean": 28.99,
+      "median": 19.69,
+      "sampleSize": 19
+    },
+    "Industrials": {
+      "mean": 24.59,
+      "median": 23.39,
+      "sampleSize": 29
+    },
+    "Communication Services": {
+      "mean": 16.93,
+      "median": 14.87,
+      "sampleSize": 17
+    }
+  }
 }

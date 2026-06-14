@@ -8,6 +8,7 @@ export interface MarketAverageData {
   averageIVtoPrice: number;
   medianIVtoPrice: number;
   aaaRate: number;
+  sectorEVtoEBIT?: Record<string, { mean: number; median: number; sampleSize: number }>;
   stale?: boolean;
 }
 

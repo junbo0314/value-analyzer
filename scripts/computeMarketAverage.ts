@@ -61,6 +61,11 @@ async function fetchAAARate(): Promise<number> {
     epsCAGR: number | null;
     netCashPerShare: number;
     currentPrice: number;
+    // EV/EBIT 계산용
+    totalCash: number;
+    totalDebt: number;
+    shares: number;
+    revenue: number;
   }
 
   const collected: StockRow[] = [];
@@ -131,6 +136,10 @@ async function fetchAAARate(): Promise<number> {
         epsCAGR,
         netCashPerShare,
         currentPrice,
+        totalCash,
+        totalDebt,
+        shares,
+        revenue: fd.totalRevenue ?? 0,
       });
       success++;
     } catch {
@@ -153,9 +162,14 @@ async function fetchAAARate(): Promise<number> {
   console.log('\n─── 2단계: 등급 배정 (moat score) ───');
   const gradeMap = assignGradeByMoatScore(collected);
 
-  // 3단계: IV/Price 계산
-  console.log('─── 3단계: IV/Price 계산 ───');
+  // 3단계: IV/Price 계산 + EV/EBIT 계산
+  console.log('─── 3단계: IV/Price + EV/EBIT 계산 ───');
   const ivpValues: number[] = [];
+
+  interface RowWithMetrics extends StockRow {
+    evToEbit: number | null;
+  }
+  const rowsWithMetrics: RowWithMetrics[] = [];
 
   for (const row of collected) {
     const grade = gradeMap.get(row.ticker) ?? 3;
@@ -188,26 +202,67 @@ async function fetchAAARate(): Promise<number> {
     if (isFinite(ivp) && ivp > 0 && ivp < 20) {
       ivpValues.push(ivp);
     }
+
+    // EV/EBIT 계산
+    let evToEbit: number | null = null;
+    if (row.revenue > 0 && row.operatingMargin > 0) {
+      const ev = row.marketCap + row.totalDebt - row.totalCash;
+      const operatingIncome = row.revenue * row.operatingMargin;
+      if (ev > 0 && operatingIncome > 0) {
+        const ratio = ev / operatingIncome;
+        evToEbit = ratio > 200 ? null : ratio;
+      }
+    }
+    rowsWithMetrics.push({ ...row, evToEbit });
   }
 
   ivpValues.sort((a, b) => a - b);
-  const avg    = ivpValues.reduce((a, b) => a + b, 0) / ivpValues.length;
-  const midIdx = Math.floor(ivpValues.length / 2);
-  const median = ivpValues.length % 2 === 0
+  const avg      = ivpValues.reduce((a, b) => a + b, 0) / ivpValues.length;
+  const midIdx   = Math.floor(ivpValues.length / 2);
+  const ivpMedian = ivpValues.length % 2 === 0
     ? (ivpValues[midIdx - 1] + ivpValues[midIdx]) / 2
     : ivpValues[midIdx];
 
-  console.log(`  유효 종목: ${ivpValues.length}개`);
+  console.log(`  유효 IV/Price 종목: ${ivpValues.length}개`);
   console.log(`  평균 IV/Price: ${avg.toFixed(4)}`);
-  console.log(`  중앙 IV/Price: ${median.toFixed(4)}`);
+  console.log(`  중앙 IV/Price: ${ivpMedian.toFixed(4)}`);
 
-  // 4단계: JSON 저장
+  // 4단계: 섹터별 EV/EBIT 집계
+  console.log('─── 4단계: 섹터별 EV/EBIT 집계 ───');
+  const sectorMap: Record<string, number[]> = {};
+  for (const row of rowsWithMetrics) {
+    if (row.evToEbit === null) continue;
+    if (!sectorMap[row.sector]) sectorMap[row.sector] = [];
+    sectorMap[row.sector].push(row.evToEbit);
+  }
+
+  function calcMedian(arr: number[]): number {
+    const s = [...arr].sort((a, b) => a - b);
+    const mid = Math.floor(s.length / 2);
+    return s.length % 2 === 0 ? (s[mid - 1] + s[mid]) / 2 : s[mid];
+  }
+
+  const sectorEVtoEBIT: Record<string, { mean: number; median: number; sampleSize: number }> = {};
+  for (const [sector, vals] of Object.entries(sectorMap)) {
+    if (vals.length === 0) continue;
+    const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
+    const med  = calcMedian(vals);
+    sectorEVtoEBIT[sector] = {
+      mean:       parseFloat(mean.toFixed(2)),
+      median:     parseFloat(med.toFixed(2)),
+      sampleSize: vals.length,
+    };
+    console.log(`  ${sector}: mean=${mean.toFixed(1)} median=${med.toFixed(1)} n=${vals.length}`);
+  }
+
+  // 5단계: JSON 저장
   const output = {
     computedAt: new Date().toISOString(),
     sampleSize: ivpValues.length,
     averageIVtoPrice: parseFloat(avg.toFixed(4)),
-    medianIVtoPrice:  parseFloat(median.toFixed(4)),
+    medianIVtoPrice:  parseFloat(ivpMedian.toFixed(4)),
     aaaRate:          parseFloat(aaaRate.toFixed(2)),
+    sectorEVtoEBIT,
   };
 
   const outDir  = path.join(process.cwd(), 'data');

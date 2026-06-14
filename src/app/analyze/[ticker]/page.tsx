@@ -200,6 +200,7 @@ export default function AnalyzePage() {
                   <IntrinsicValueCard result={ivResult} stockData={stockData} />
                   <MarketContextCard
                     currentIVtoPrice={ivResult.iv / ivResult.currentPrice}
+                    stockData={stockData}
                   />
                   <FormulaBreakdown result={ivResult} selectedGrade={selectedGrade} />
                 </>
