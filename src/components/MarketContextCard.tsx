@@ -8,7 +8,7 @@ import { calculateEVtoEBIT } from '@/lib/calculations';
 
 interface Props {
   currentIVtoPrice: number | null;
-  stockData?: StockData;
+  stockData: StockData | null;
 }
 
 export default function MarketContextCard({ currentIVtoPrice, stockData }: Props) {
@@ -51,7 +51,30 @@ export default function MarketContextCard({ currentIVtoPrice, stockData }: Props
     year: 'numeric', month: 'short', day: 'numeric',
   });
 
-  // 비율에 따른 색상·레이블
+  // 섹터별 EV/EBIT 데이터 준비
+  const sector = stockData?.sector ?? '';
+  const sectorStats = (sector && data.sectorEVtoEBIT) ? data.sectorEVtoEBIT[sector] ?? null : null;
+  const stockEV = stockData ? calculateEVtoEBIT(stockData) : null;
+
+  const evDeviation = (stockEV != null && sectorStats != null)
+    ? ((stockEV - sectorStats.median) / sectorStats.median) * 100
+    : null;
+
+  const evDeviationColor =
+    evDeviation === null ? 'text-gray-400'
+    : evDeviation < -20  ? 'text-green-400'
+    : evDeviation <= 20  ? 'text-gray-300'
+    : evDeviation <= 50  ? 'text-yellow-400'
+    : 'text-orange-400';
+
+  const evDeviationLabel =
+    evDeviation === null ? 'EV/EBIT 계산 불가 (영업적자 또는 음수 EV)'
+    : evDeviation < -20  ? '섹터 평균 대비 저평가'
+    : evDeviation <= 20  ? '섹터 평균 수준'
+    : evDeviation <= 50  ? '섹터 평균 대비 고평가'
+    : '섹터 평균 대비 크게 고평가';
+
+  // IV/Price 비율에 따른 색상·레이블
   const ratioColor =
     ratio === null      ? 'text-gray-400'
     : ratio >= 1.5      ? 'text-green-400'
@@ -126,73 +149,47 @@ export default function MarketContextCard({ currentIVtoPrice, stockData }: Props
       </div>
 
       {/* 섹터별 EV/EBIT 비교 */}
-      {stockData && data.sectorEVtoEBIT && (() => {
-        const sector = stockData.sector;
-        const sectorData = sector ? data.sectorEVtoEBIT![sector] : null;
-        const stockEV = calculateEVtoEBIT(stockData);
-
-        if (!sectorData) return null;
-
-        const deviation = stockEV != null
-          ? ((stockEV - sectorData.median) / sectorData.median) * 100
-          : null;
-
-        const deviationColor =
-          deviation === null       ? 'text-gray-400'
-          : deviation < -20        ? 'text-green-400'
-          : deviation <= 20        ? 'text-gray-300'
-          : deviation <= 50        ? 'text-yellow-400'
-          : 'text-orange-400';
-
-        const deviationLabel =
-          deviation === null       ? 'EV/EBIT 계산 불가 (영업적자 또는 음수 EV)'
-          : deviation < -20        ? '섹터 평균 대비 저평가'
-          : deviation <= 20        ? '섹터 평균 수준'
-          : deviation <= 50        ? '섹터 평균 대비 고평가'
-          : '섹터 평균 대비 크게 고평가';
-
-        return (
-          <div className="mt-3 pt-3 border-t border-gray-800">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-              섹터별 EV/EBIT 비교 <span className="text-gray-600 font-normal normal-case">({sector})</span>
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div>
-                <p className="text-gray-600 text-xs mb-1">섹터 중앙값</p>
-                <p className="text-white text-lg font-bold tabular-nums">
-                  {sectorData.median.toFixed(1)}
-                  <span className="text-gray-500 text-sm font-normal">x</span>
-                </p>
-              </div>
-              <div>
-                <p className="text-gray-600 text-xs mb-1">섹터 평균</p>
-                <p className="text-gray-300 text-lg font-semibold tabular-nums">
-                  {sectorData.mean.toFixed(1)}
-                  <span className="text-gray-500 text-sm font-normal">x</span>
-                </p>
-              </div>
-              <div>
-                <p className="text-gray-600 text-xs mb-1">이 종목 EV/EBIT</p>
-                <p className={`text-lg font-bold tabular-nums ${stockEV != null ? 'text-blue-400' : 'text-gray-600'}`}>
-                  {stockEV != null ? `${stockEV.toFixed(1)}x` : '—'}
-                </p>
-              </div>
-              <div>
-                <p className="text-gray-600 text-xs mb-1">섹터 중앙 대비</p>
-                <p className={`text-lg font-bold tabular-nums ${deviationColor}`}>
-                  {deviation != null ? `${deviation > 0 ? '+' : ''}${deviation.toFixed(0)}%` : '—'}
-                </p>
-              </div>
+      {sectorStats && (
+        <div className="mt-3 pt-3 border-t border-gray-800">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+            섹터별 EV/EBIT 비교 <span className="text-gray-600 font-normal normal-case">({sector})</span>
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div>
+              <p className="text-gray-600 text-xs mb-1">섹터 중앙값</p>
+              <p className="text-white text-lg font-bold tabular-nums">
+                {sectorStats.median.toFixed(1)}
+                <span className="text-gray-500 text-sm font-normal">x</span>
+              </p>
             </div>
-            <div className="mt-2">
-              <p className={`text-sm font-medium ${deviationColor}`}>{deviationLabel}</p>
-              <p className="text-gray-600 text-xs mt-0.5">
-                섹터 내 {sectorData.sampleSize}개 종목 기준
+            <div>
+              <p className="text-gray-600 text-xs mb-1">섹터 평균</p>
+              <p className="text-gray-300 text-lg font-semibold tabular-nums">
+                {sectorStats.mean.toFixed(1)}
+                <span className="text-gray-500 text-sm font-normal">x</span>
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-600 text-xs mb-1">이 종목 EV/EBIT</p>
+              <p className={`text-lg font-bold tabular-nums ${stockEV != null ? 'text-blue-400' : 'text-gray-600'}`}>
+                {stockEV != null ? `${stockEV.toFixed(1)}x` : '—'}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-600 text-xs mb-1">섹터 중앙 대비</p>
+              <p className={`text-lg font-bold tabular-nums ${evDeviationColor}`}>
+                {evDeviation != null ? `${evDeviation > 0 ? '+' : ''}${evDeviation.toFixed(0)}%` : '—'}
               </p>
             </div>
           </div>
-        );
-      })()}
+          <div className="mt-2">
+            <p className={`text-sm font-medium ${evDeviationColor}`}>{evDeviationLabel}</p>
+            <p className="text-gray-600 text-xs mt-0.5">
+              섹터 내 {sectorStats.sampleSize}개 종목 기준
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
