@@ -53,7 +53,7 @@ export default function MarketGradeSelector({ selectedGrade, onSelect, ticker }:
               {ticker} 글로벌 시장 점유율
             </span>
             {msData && (
-              <span className="ml-auto text-xs text-gray-500">{msData.asOf}년 기준</span>
+              <span className="ml-auto text-xs text-gray-500">{msData.asOf} 기준</span>
             )}
           </div>
 
