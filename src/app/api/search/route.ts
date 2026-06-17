@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveKoreanTicker } from '@/lib/koreanTickers';
 
+export const runtime = 'nodejs';
+
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const YF = require('yahoo-finance2').default;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

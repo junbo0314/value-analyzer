@@ -16,6 +16,8 @@ import IntrinsicValueCard from '@/components/IntrinsicValueCard';
 import MarketContextCard from '@/components/MarketContextCard';
 import FormulaBreakdown from '@/components/FormulaBreakdown';
 import AIReportSection from '@/components/AIReportSection';
+import TradingViewChart from '@/components/TradingViewChart';
+import { getTradingViewSymbol } from '@/lib/tradingViewUtils';
 
 export default function AnalyzePage() {
   const params = useParams();
@@ -198,11 +200,20 @@ export default function AnalyzePage() {
               {ivResult ? (
                 <>
                   <IntrinsicValueCard result={ivResult} stockData={stockData} />
+                  <FormulaBreakdown result={ivResult} selectedGrade={selectedGrade} />
+                  <div>
+                    <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                      주가 차트
+                    </h3>
+                    <TradingViewChart
+                      ticker={stockData.ticker}
+                      exchange={getTradingViewSymbol(stockData.ticker, stockData.exchange).split(':')[0]}
+                    />
+                  </div>
                   <MarketContextCard
                     currentIVtoPrice={ivResult.iv / ivResult.currentPrice}
                     stockData={stockData}
                   />
-                  <FormulaBreakdown result={ivResult} selectedGrade={selectedGrade} />
                 </>
               ) : (
                 <div className="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center text-gray-500">

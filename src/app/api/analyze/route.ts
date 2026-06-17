@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { StockData } from '@/types';
 
+export const runtime = 'nodejs';
+
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const YahooFinanceClass = require('yahoo-finance2').default;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
